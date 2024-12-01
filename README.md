@@ -1,0 +1,129 @@
+# Kubernetes Scheduler Extension
+
+## Sample Scheduler Plugin
+
+Build Container image.
+
+```sh
+buildah bud --format=docker -t <Scheduler Image Path> -f build/index-scheduler/Dockerfile .
+```
+
+Push container image.
+
+```sh
+podman push <Scheduler Image Path>
+```
+
+Create namespace.
+
+```sh
+kubectl create namespace sched-system
+```
+
+Deploy scheduler to target namespace.
+
+```sh
+cat | kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: index-scheduler
+  namespace: sched-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: index-scheduler-kube-scheduler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-scheduler
+subjects:
+- kind: ServiceAccount
+  name: index-scheduler
+  namespace: sched-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: index-scheduler-volume-scheduler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:volume-scheduler
+subjects:
+- kind: ServiceAccount
+  name: index-scheduler
+  namespace: sched-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scheduler-config
+  namespace: sched-system
+data:
+  config: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    leaderElection:
+      leaderElect: false
+    profiles:
+    - schedulerName: index-scheduler
+      plugins:
+        filter:
+          enabled:
+          - name: IndexScheduling
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: index-scheduler
+  namespace: sched-system
+spec:
+  selector:
+    matchLabels:
+      app: index-scheduler
+  template:
+    metadata:
+      labels:
+        app: index-scheduler
+    spec:
+      serviceAccountName: index-scheduler
+      containers:
+      - name: index-scheduler
+        image: <Scheduler Image Path>
+        command:
+        - /index-scheduler
+        - --config=/opt/config.yaml
+        ports:
+        - containerPort: 10259
+          protocol: TCP
+        volumeMounts:
+        - name: scheduler-config
+          mountPath: /opt
+      volumes:
+      - name: scheduler-config
+        configMap:
+          name: scheduler-config
+          items:
+          - key: config
+            path: config.yaml
+            mode: 0444
+EOF
+```
+
+Deploy pod with specified scheduler.
+
+```sh
+cat | kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-01
+spec:
+  schedulerName: index-scheduler
+  containers:
+  - name: sample-01
+    image: nginx
+EOF
+```
