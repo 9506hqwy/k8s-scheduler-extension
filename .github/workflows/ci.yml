@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags-ignore: [ '**' ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Linter
+      if: matrix.os == 'ubuntu-latest'
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: Check Format
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        go fmt ./...
+        git diff --exit-code --quiet
+
+    - name: Check Lint
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        PATH="$(go env GOPATH)/bin:$PATH"
+        staticcheck ./...
+
+    - name: Run Tests
+      run: go test -v -cover -coverprofile cover.out ./...
+
+    - name: Generate Coverage Report (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        go tool cover -html=cover.out -o coverage.html
+
+        mkdir ./artifacts
+        tar -zcf ./artifacts/coverage.tar.gz coverage.html
+
+    - name: Generate Coverage Report (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        go tool cover -html cover.out -o coverage.html
+
+        mkdir .\artifacts
+        Compress-Archive -Path 'coverage.html' -DestinationPath ".\artifacts\coverage.zip"
+
+    - name: Report Coverage (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        go tool cover --func=cover.out
+        go tool cover --func=cover.out > $GITHUB_STEP_SUMMARY
+
+    - name: Report Coverage (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        go tool cover --func=cover.out
+        go tool cover --func=cover.out > $env:GITHUB_STEP_SUMMARY
+
+    - name: Create Artifacts (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        for CMD in $(ls ./cmd)
+        do
+          go build -trimpath -o "./bin/${CMD}" "./cmd/${CMD}"
+        done
+
+    - name: Create Artifacts (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        Get-ChildItem .\cmd -Directory |% {
+          $Name = $_.Name;
+          go build -trimpath -o ".\bin\${Name}.exe" ".\cmd\$Name"
+        }
+
+    - name: Create Archive (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        GO_TARGET="$(go env GOARCH)-$(go env GOOS)-$(go env GOVERSION)"
+
+        CUR_DIR=$(pwd)
+        LIB_DIR='./bin'
+        pushd "$LIB_DIR"
+        FILES=$(find . -maxdepth 1 -type f \( -name '*.so' -o -name '*.a' -o -executable \))
+        if [[ -n $FILES ]] ; then
+            tar -zcf "${CUR_DIR}/artifacts/${GO_TARGET}.tar.gz" $FILES
+        fi
+        popd
+
+        echo "GO_TARGET=${GO_TARGET}" >> $GITHUB_ENV
+
+    - name: Create Archive (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        $GO_TARGET = "$(go env GOARCH)-$(go env GOOS)-$(go env GOVERSION)"
+
+        $TARGETS = @(
+          'bin\*.exe',
+          'bin\*.dll',
+          'bin\*.exp',
+          'bin\*.lib'
+        )
+        $LIBS = @(Get-Item -Path $TARGETS)
+        if ($LIBS.Length -gt 0) {
+            Compress-Archive -Path $LIBS -DestinationPath ".\artifacts\${GO_TARGET}.zip"
+        }
+
+        Write-Output "GO_TARGET=$GO_TARGET" >> $env:GITHUB_ENV
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.GO_TARGET }}
+        path: artifacts/
+        retention-days: 1
