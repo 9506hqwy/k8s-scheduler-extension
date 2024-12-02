@@ -7,6 +7,7 @@ require (
 	k8s.io/apimachinery v0.31.3
 	k8s.io/component-base v0.31.3
 	k8s.io/klog/v2 v2.130.1
+	k8s.io/kube-scheduler v0.31.3
 	k8s.io/kubernetes v1.31.3
 )
 
@@ -105,7 +106,6 @@ require (
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/kms v0.30.6 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubelet v0.30.6 // indirect
 	k8s.io/mount-utils v0.0.0 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect

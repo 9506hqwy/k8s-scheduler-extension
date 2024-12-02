@@ -6,6 +6,7 @@ import (
 
 	"github.com/9506hqwy/k8s-scheduler-extension/pkg/indexscheduling"
 	v1 "k8s.io/api/core/v1"
+	extenderv1 "k8s.io/kube-scheduler/extender/v1"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -88,5 +89,51 @@ func Test_FilterNodeNameNotNumber(t *testing.T) {
 	s := i.Filter(context.Background(), framework.NewCycleState(), &p, &ni)
 	if s.Code() != framework.Unschedulable {
 		t.Error("Failed.", s)
+	}
+}
+
+func Test_FilterFuncNoCache(t *testing.T) {
+	args := extenderv1.ExtenderArgs{
+		Pod:   &v1.Pod{},
+		Nodes: &v1.NodeList{},
+	}
+
+	args.Pod.SetName("Pod01")
+
+	args.Nodes.Items = []v1.Node{{}, {}}
+	args.Nodes.Items[0].SetName("Node01")
+	args.Nodes.Items[1].SetName("Node02")
+
+	ret := indexscheduling.Filter(&args)
+
+	if ret.Nodes.Items[0].GetName() != "Node01" {
+		t.Error("Failed.", ret.Nodes.Items[0])
+	}
+
+	if _, ok := ret.FailedNodes["Node02"]; !ok {
+		t.Error("Failed.", ret.FailedNodes)
+	}
+}
+
+func Test_FilterFuncCache(t *testing.T) {
+	args := extenderv1.ExtenderArgs{
+		Pod: &v1.Pod{},
+	}
+
+	args.Pod.SetName("Pod01")
+
+	nodeNames := make([]string, 0, 2)
+	nodeNames = append(nodeNames, "Node01")
+	nodeNames = append(nodeNames, "Node02")
+	args.NodeNames = &nodeNames
+
+	ret := indexscheduling.Filter(&args)
+
+	if (*ret.NodeNames)[0] != "Node01" {
+		t.Error("Failed.", ret.NodeNames)
+	}
+
+	if _, ok := ret.FailedNodes["Node02"]; !ok {
+		t.Error("Failed.", ret.FailedNodes)
 	}
 }
