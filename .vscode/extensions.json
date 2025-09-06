@@ -1,6 +1,10 @@
 {
     "recommendations": [
+        "davidanson.vscode-markdownlint",
         "editorconfig.editorconfig",
-        "golang.go"
+        "github.vscode-github-actions",
+        "golang.go",
+        "timonwong.shellcheck",
+        "yzhang.markdown-all-in-one"
     ]
 }

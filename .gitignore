@@ -30,3 +30,6 @@ artifacts/
 
 # binary
 bin/
+
+# profile
+*.prof
