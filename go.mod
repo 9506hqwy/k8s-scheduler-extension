@@ -9,9 +9,9 @@ tool (
 )
 
 require (
-	k8s.io/api v0.31.12
-	k8s.io/apimachinery v0.31.12
-	k8s.io/component-base v0.31.12
+	k8s.io/api v0.31.13
+	k8s.io/apimachinery v0.31.13
+	k8s.io/component-base v0.31.13
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-scheduler v0.31.3
 	k8s.io/kubernetes v1.31.3
@@ -125,7 +125,7 @@ require (
 	honnef.co/go/tools v0.6.1 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0 // indirect
 	k8s.io/apiserver v0.30.6 // indirect
-	k8s.io/client-go v0.31.12 // indirect
+	k8s.io/client-go v0.31.13 // indirect
 	k8s.io/cloud-provider v0.0.0 // indirect
 	k8s.io/component-helpers v0.30.6 // indirect
 	k8s.io/controller-manager v0.30.6 // indirect
