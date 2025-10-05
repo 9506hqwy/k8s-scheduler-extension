@@ -13,8 +13,8 @@ require (
 	k8s.io/apimachinery v0.31.13
 	k8s.io/component-base v0.31.13
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kube-scheduler v0.31.3
-	k8s.io/kubernetes v1.31.3
+	k8s.io/kube-scheduler v0.31.13
+	k8s.io/kubernetes v1.31.13
 )
 
 require (
@@ -37,7 +37,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
