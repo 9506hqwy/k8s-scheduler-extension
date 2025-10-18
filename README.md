@@ -5,7 +5,7 @@
 Build Container image.
 
 ```sh
-buildah bud --format=docker -t <Scheduler Image Path> -f build/index-extender/Dockerfile .
+buildah bud -t <Scheduler Image Path> -f build/index-extender/Dockerfile .
 ```
 
 Push container image.
@@ -152,7 +152,7 @@ EOF
 Build Container image.
 
 ```sh
-buildah bud --format=docker -t <Scheduler Image Path> -f build/index-scheduler/Dockerfile .
+buildah bud -t <Scheduler Image Path> -f build/index-scheduler/Dockerfile .
 ```
 
 Push container image.
