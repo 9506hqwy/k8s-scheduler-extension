@@ -56,6 +56,20 @@ subjects:
   name: index-scheduler
   namespace: sched-system
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: index-scheduler-config-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: index-scheduler
+  namespace: sched-system
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -90,7 +104,7 @@ spec:
       serviceAccountName: index-scheduler
       containers:
       - name: default-scheduler
-        image: registry.k8s.io/kube-scheduler:v1.31.0
+        image: registry.k8s.io/kube-scheduler:v1.33.0
         command:
         - kube-scheduler
         - --config=/opt/config.yaml
@@ -184,6 +198,20 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:volume-scheduler
+subjects:
+- kind: ServiceAccount
+  name: index-scheduler
+  namespace: sched-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: index-scheduler-config-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
   name: index-scheduler
