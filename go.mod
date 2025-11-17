@@ -10,7 +10,7 @@ tool (
 
 require (
 	k8s.io/api v0.33.5
-	k8s.io/apimachinery v0.33.5
+	k8s.io/apimachinery v0.33.6
 	k8s.io/component-base v0.33.5
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-scheduler v0.33.5
